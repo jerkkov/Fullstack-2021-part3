@@ -22,12 +22,6 @@ let persons = [
       name: "Ada Lovelace",
       number: "39-44-5323523",
       id: 2
-    },
-
-    {
-      name: "Paska PErse",
-      number: "39-44-5323523",
-      id: 3
     }
   ]
   app.get('/api/persons/info', (request, response) => {
