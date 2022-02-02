@@ -14,11 +14,6 @@ morgan.token('person', (request, response) => {
 })
 app.use(morgan(':method :url :status - :response-time ms :person'))
 
-if (process.argv.length < 3) {
-  console.log('Please provide the password as an argument: node mongo.js <password>')
-  process.exit(1)
-}
-
 
   app.get('/api/persons/info', (request, response) => {
       const personsCount = persons.length
@@ -48,17 +43,15 @@ const generateId = () => {
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
-  const redundantName = Person.find({}).then(persons => persons.name === body.name) //Kuinka hitossa saan tehtyä tämän tarkistuksen
-  if(!body.name || !body.number || redundantName) {
-    return response.status(400).json({
-      error: redundantName ? 'name must be unique' : 'content missing'
-    })
+  console.log(body)
+  //const redundantName = Person.find({}).then(persons => persons.name === body.name)
+  if (body === undefined) {
+    return response.status(400).json({ error: 'content missing' })
   }
 
   const person = new Person({
     name: body.name,
     number: body.number,
-    id: generateId(),
   })
   person.save().then(savedPerson => {
     response.json(savedPerson)
