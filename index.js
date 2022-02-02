@@ -1,29 +1,25 @@
+require('dotenv').config()
 const express = require('express')
-const morgan = require('morgan')
 const app = express()
+const Person = require('./models/person')
 const cors = require('cors')
+const morgan = require('morgan')
+
 app.use(express.static('build'))
-
 app.use(cors())
-
 app.use(express.json())
+
 morgan.token('person', (request, response) => {
   return JSON.stringify(request.body)
 })
 app.use(morgan(':method :url :status - :response-time ms :person'))
 
-let persons = [
-    {
-      name: "Arto Hellas",
-      number: "040-123456",
-      id: 1
-    },
-    {
-      name: "Ada Lovelace",
-      number: "39-44-5323523",
-      id: 2
-    }
-  ]
+if (process.argv.length < 3) {
+  console.log('Please provide the password as an argument: node mongo.js <password>')
+  process.exit(1)
+}
+
+
   app.get('/api/persons/info', (request, response) => {
       const personsCount = persons.length
       date = new Date()
@@ -33,22 +29,17 @@ let persons = [
   })
 
   app.get('/api/persons', (request, response) => {
-    if(persons) {
+    Person.find({}).then(persons => {
       response.json(persons)
-    } else {
-      response.status(404).end()
-    }
+    })
   })
+  
 
   app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const person = persons.find(person => person.id === id)
-  if(person) {
+    Person.findById(request.params.id).then(person => {
     response.json(person)
-  } else {
-    response.status(404).end()
-  }
-})
+    })
+  })
 
 const generateId = () => {
   const rndId = Math.floor(Math.random() * 100000)
@@ -57,22 +48,21 @@ const generateId = () => {
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
-  const redundantName = persons.find(person => person.name === body.name)
+  const redundantName = Person.find({}).then(persons => persons.name === body.name) //Kuinka hitossa saan tehtyä tämän tarkistuksen
   if(!body.name || !body.number || redundantName) {
     return response.status(400).json({
       error: redundantName ? 'name must be unique' : 'content missing'
     })
   }
 
-  const person = {
+  const person = new Person({
     name: body.name,
     number: body.number,
     id: generateId(),
-  }
-
-  persons = persons.concat(person)
-
-  response.json(person)
+  })
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
+  })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -88,7 +78,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
