@@ -3,23 +3,11 @@ const app = express()
 require('dotenv').config()
 const cors = require('cors')
 const morgan = require('morgan')
-const person = require('./models/person')
+const Person = require('./models/person')
 
 app.use(express.static('build'))
 app.use(cors())
 app.use(express.json())
-
-const errorHandler = (error, request, response, next) =>  {
-  console.error(error.message)
-
-  if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id' })
-  } else if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message})
-  }
-
-  next(error)
-}
 
 morgan.token('person', (request, response) => {
   return JSON.stringify(request.body)
