@@ -6,15 +6,15 @@ if (process.argv.length < 3) {
 }
 
 //Command line variables
-const password = process.argv[2]
+const password = process.argv[2] || process.env.PASSWORD
 const argName = process.argv[3]
 const argNumber = process.argv[4]
 
+println("PASS",password)
+const uri =
+`mongodb+srv://admin:${password}@cluster0.kjz0f.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
-const url =
-`mongodb+srv://admin:${password}@cluster0.cx1lt.mongodb.net/phonebook?retryWrites=true&w=majority`
-
-mongoose.connect(url)
+mongoose.connect(uri)
 
 const personSchema = new mongoose.Schema({
     name: String,
